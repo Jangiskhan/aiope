@@ -58,7 +58,7 @@ class DeployUseCase @Inject constructor(
       }
 
       // Update server to use daemon port and connect
-      val updated = server.copy(port = 2222, status = "online")
+      val updated = server.copy(status = "online")
       serverDao.upsert(updated)
 
       // Try connecting to the daemon
