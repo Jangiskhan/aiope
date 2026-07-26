@@ -56,6 +56,8 @@ public final class TerminalView extends View {
   int mTopRow;
 
   boolean mIsSelectingText = false, mIsDraggingLeftSelection, mInitialTextSelection;
+  private boolean mInitFailed = false;
+  private String mInitError = null;
   int mSelX1 = -1, mSelX2 = -1, mSelY1 = -1, mSelY2 = -1;
   float mSelectionDownX, mSelectionDownY;
   private ActionMode mActionMode;
@@ -143,7 +145,7 @@ public final class TerminalView extends View {
           return true;
         }
         requestFocus();
-        if (!(mEmulator != null && mEmulator.isMouseTrackingActive())) {
+        if (!mEmulator.isMouseTrackingActive()) {
           if (!e.isFromSource(InputDevice.SOURCE_MOUSE)) {
             mClient.onSingleTapUp(e);
             return true;
@@ -192,7 +194,7 @@ public final class TerminalView extends View {
         // Do not start scrolling until last fling has been taken care of:
         if (!mScroller.isFinished()) return true;
 
-        final boolean mouseTrackingAtStartOfFling = (mEmulator != null && mEmulator.isMouseTrackingActive());
+        final boolean mouseTrackingAtStartOfFling = mEmulator.isMouseTrackingActive();
         float SCALE = 0.25f;
         if (mouseTrackingAtStartOfFling) {
           mScroller.fling(0, 0, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.mRows / 2, mEmulator.mRows / 2);
@@ -205,7 +207,7 @@ public final class TerminalView extends View {
 
           @Override
           public void run() {
-            if (mouseTrackingAtStartOfFling != (mEmulator != null && mEmulator.isMouseTrackingActive())) {
+            if (mouseTrackingAtStartOfFling != mEmulator.isMouseTrackingActive()) {
               mScroller.abortAnimation();
               return;
             }
@@ -241,7 +243,7 @@ public final class TerminalView extends View {
       // e.g in vim, we can change window size with fingers moving.
       @Override
       public boolean onDoubleTapEvent(MotionEvent e) {
-        if (mEmulator != null && mEmulator.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
+        if (mEmulator.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
           switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
               doubleTapX = e.getX();
@@ -584,7 +586,7 @@ public final class TerminalView extends View {
     boolean up = rowsDown < 0;
     int amount = Math.abs(rowsDown);
     for (int i = 0; i < amount; i++) {
-      if ((mEmulator != null && mEmulator.isMouseTrackingActive())) {
+      if (mEmulator.isMouseTrackingActive()) {
         sendMouseEventCode(event, up ? TerminalEmulator.MOUSE_WHEELUP_BUTTON : TerminalEmulator.MOUSE_WHEELDOWN_BUTTON, true);
       } else if (mEmulator.isAlternateBufferActive()) {
         // Send up and down key events for scrolling, which is what some terminals do to make scroll work in
@@ -677,7 +679,7 @@ public final class TerminalView extends View {
         return true;
       } else if (ev.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
         pasteFromClipboard();
-      } else if ((mEmulator != null && mEmulator.isMouseTrackingActive())) { // BUTTON_PRIMARY.
+      } else if (mEmulator.isMouseTrackingActive()) { // BUTTON_PRIMARY.
         switch (ev.getAction()) {
           case MotionEvent.ACTION_DOWN:
           case MotionEvent.ACTION_UP:

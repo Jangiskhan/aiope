@@ -188,6 +188,10 @@ public class TerminalSession extends TerminalOutput {
   public void initializeEmulator(int columns, int rows) {
     mEmulator = new TerminalEmulator(this, columns, rows, /* transcript= */2000);
 
+    if (!JNI.isAvailable()) {
+      throw new IllegalStateException("Terminal JNI bridge unavailable — native library missing or failed to load");
+    }
+
     int[] processId = new int[1];
     mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns);
     mShellPid = processId[0];

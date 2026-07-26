@@ -57,8 +57,8 @@ class DeployUseCase @Inject constructor(
         throw RuntimeException("Installer failed (exit $exitCode): ${stderr.take(500)}")
       }
 
-      // Update server to use daemon port and connect
-      val updated = server.copy(status = "online")
+      // Update server to use daemon port (2222 = aiope-remote daemon default) and connect
+      val updated = server.copy(status = "online", port = 2222)
       serverDao.upsert(updated)
 
       // Try connecting to the daemon

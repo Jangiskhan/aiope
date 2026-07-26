@@ -79,7 +79,6 @@ class ServerListViewModel @Inject constructor(
         name = name,
         host = host,
         user = user,
-        port = port,
         bootstrapPort = port,
         privateKey = privateKey,
         publicKey = publicKey,

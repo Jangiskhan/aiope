@@ -13,15 +13,21 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import ngo.xnet.aiope.core.terminal.ShellDiscovery
 import ngo.xnet.aiope.core.terminal.backend.TerminalSession
@@ -101,8 +107,42 @@ fun TerminalPanel(keyboardVisible: Boolean, modifier: Modifier = Modifier) {
 
 @Composable
 private fun TerminalViewComposable(shell: ShellDiscovery.Shell, modifier: Modifier = Modifier) {
+  var initError by remember { mutableStateOf<String?>(null) }
+
   val session = remember(shell.id) {
-    TerminalSessionHolder.getOrCreate(shell.id, shell)
+    try {
+      TerminalSessionHolder.getOrCreate(shell.id, shell)
+    } catch (e: Exception) {
+      initError = e.message ?: "Failed to create terminal session"
+      null
+    }
+  }
+
+  if (initError != null || session == null) {
+    Box(modifier = modifier.background(ComposeColor(0xFF1E1E2E)).padding(16.dp)) {
+      Column {
+        Icon(
+          imageVector = Icons.Filled.Warning,
+          contentDescription = null,
+          tint = ComposeColor(0xFFFF6B6B),
+          modifier = Modifier.size(32.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+          text = "Terminal unavailable",
+          color = ComposeColor(0xFFFF6B6B),
+          fontWeight = FontWeight.Bold,
+          fontSize = 14.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+          text = initError ?: "JNI bridge failed to initialize",
+          color = ComposeColor(0xFF999999),
+          fontSize = 12.sp
+        )
+      }
+    }
+    return
   }
 
   var currentTextSize by remember { mutableFloatStateOf(0f) }
